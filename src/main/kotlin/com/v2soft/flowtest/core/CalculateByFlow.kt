@@ -7,8 +7,8 @@ import java.util.zip.CRC32
 class CalculateByFlow {
     fun calculateBufferDescriptionByFlow(flow: InputFlowBase, blockSize: Int): BufferDescription {
         val flowSize = flow.getSize()
-        val blockCount = (flowSize / blockSize).toInt() + 1
         val lastBlockSize = (flowSize % blockSize).toInt()
+        val blockCount = (flowSize / blockSize).toInt() + (if (lastBlockSize > 0) 1 else 0)
         val crc32array = LongArray(blockCount)
         val buffer = ByteArray(blockSize)
         val crc32 = CRC32()
