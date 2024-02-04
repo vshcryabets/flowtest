@@ -14,12 +14,12 @@ class CalculateByFlow {
         val crc32 = CRC32()
 
         for (i in 0..blockCount - 2) {
-            flow.getBlock(i.toLong() * blockSize.toLong(), blockSize, buffer)
+            flow.getBlock(i, buffer)
             crc32.reset()
             crc32.update(buffer)
             crc32array[i] = crc32.value
         }
-        flow.getBlock((blockCount - 1).toLong() * blockSize.toLong(), lastBlockSize, buffer)
+        flow.getBlock((blockCount - 1), buffer)
         crc32.reset()
         crc32.update(buffer)
         crc32array[blockCount - 1] = crc32.value

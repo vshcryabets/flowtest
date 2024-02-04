@@ -14,7 +14,24 @@ dataClass("BufferDescription").apply {
     field("blocks", DataType.array(DataType.int64))
 }
 
-declareInterface("InputFlowBase2").apply {
+declareInterface("InputFlowResponseHandler").apply {
+    addMethod(
+        "handleBlock",
+        inputs = InputList().apply {
+            argument("requestTag", DataType.int32)
+            argument("size", DataType.int32)
+            argument("array", DataType.array(DataType.uint8))
+        }
+    )
+}
+
+declareInterface("InputFlowBase").apply {
+    addMethod(
+        "registerAsyncHandler",
+        inputs = InputList().apply {
+            argument("handler", DataType.userClass("InputFlowResponseHandler", true))
+        }
+    )
     addMethod(
         "getSize",
         OutputList().apply {
@@ -22,14 +39,28 @@ declareInterface("InputFlowBase2").apply {
         }, null
     )
     addMethod(
-        "getSize",
+        "getBlockSize",
+        OutputList().apply {
+            output("size", DataType.int32)
+        }, null
+    )
+    addMethod(
+        "getBlock",
         outputs = OutputList().apply {
-            output("size", DataType.int64)
+            output("size", DataType.int32)
             outputReusable("array", DataType.array(DataType.uint8))
         },
         inputs = InputList().apply {
+            argument("blockId", DataType.int32)
+        }
+    )
+    addMethod(
+        "getBlockAsync",
+        inputs = InputList().apply {
             argument("offset", DataType.int64)
             argument("size", DataType.int32)
+            argument("array", DataType.array(DataType.uint8))
+            argument("requestTag", DataType.int32)
         }
     )
 }
