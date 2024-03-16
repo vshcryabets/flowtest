@@ -7,8 +7,16 @@ enum class HashMethod {
     MD5
 }
 
-interface InputFlowBase {
+interface InputBufferBase {
+    /**
+     * Size of buffer in bytes.
+     */
     fun getSize() : Long
+
+    /**
+     * Whole number of blocks in this buffer. I.e size / blockSize.
+     */
+    fun getBlocksCount(): Int
     fun getBlock(blockId: Int, array : ByteArray) : Int
     fun getBlockSize(): Int
     fun getBlockHash(blockId: Int): ByteArray

@@ -1,31 +1,30 @@
 package com.v2soft.flowtest.tests
 
 import com.v2soft.flowtest.base.HashMethod
-import com.v2soft.flowtest.core.CalculateByFlow
-import com.v2soft.flowtest.io.MemoryRandomFlow
+import com.v2soft.flowtest.io.MemoryRandomBuffer
 import kotlinx.coroutines.*
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.test.assertEquals
 
 internal class LinearTestTest {
 
     val invalidated = AtomicBoolean(false)
 
     @Test
-    fun test1() {
-        val memBuffer = MemoryRandomFlow(
+    fun testPrepare() {
+        val memBuffer = MemoryRandomBuffer(
             blocksize = 1024,
-            blockcount = 1024,
+            blocksCount = 1024,
             hashMethod = HashMethod.CRC32)
 
-        val bufferDescription = CalculateByFlow().calculateBufferDescriptionByFlow(memBuffer, 2048)
-        val test = LinearTest()
-        test.prepare(memBuffer, bufferDescription, Duration.ofSeconds(1))
-        test.startTest()
-        Thread.sleep(1000)
-        test.stopTest()
+        val test = LinearTest(memBuffer)
+        runBlocking {
+            test.prepare().collect {
+                println(it)
+            }
+        }
+        assertEquals(1024, test.hashes.size)
     }
 
     suspend fun sender() {

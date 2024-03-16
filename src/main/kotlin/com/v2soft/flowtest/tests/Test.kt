@@ -1,11 +1,9 @@
 package com.v2soft.flowtest.tests
 
-import com.v2soft.flowtest.base.BufferDescription
-import com.v2soft.flowtest.base.InputFlowBase
-import java.time.Duration
+import kotlinx.coroutines.flow.Flow
 
 interface Test {
-    fun prepare(inputFlowBase: InputFlowBase, bufferDescription: BufferDescription, notifyPeriod : Duration)
+    fun prepare(): Flow<Pair<Int, Int>>
     fun startTest()
     fun stopTest()
 }

@@ -1,7 +1,7 @@
 package com.v2soft.flowtest.io
 
 import com.v2soft.flowtest.base.HashMethod
-import com.v2soft.flowtest.base.InputFlowBase
+import com.v2soft.flowtest.base.InputBufferBase
 import com.v2soft.flowtest.base.InputFlowResponseHandler
 import java.io.Closeable
 import java.io.File
@@ -12,13 +12,16 @@ class FileInputFlow(
     private val file: File,
     private val blockSize: Int,
     hashMethod: HashMethod
-) : InputFlowBase, Closeable {
+) : InputBufferBase, Closeable {
 
     val fileInput = RandomAccessFile(file, "r")
     var requesthandler: InputFlowResponseHandler? = null
     val mutex = Semaphore(1)
 
     override fun getSize(): Long = file.length()
+    override fun getBlocksCount(): Int {
+        TODO("Not yet implemented")
+    }
 
     override fun getBlock(blockId: Int, array: ByteArray): Int =
         try {

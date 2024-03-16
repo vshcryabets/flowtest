@@ -1,8 +1,3 @@
-import com.v2soft.flowtest.core.CalculateByFlow
-import com.v2soft.flowtest.io.FileInputFlow
-import com.v2soft.flowtest.io.MemoryRandomFlow
-import java.io.File
-
 fun main(args: Array<String>) {
     if (args.size < 1) {
         println("Flow test")

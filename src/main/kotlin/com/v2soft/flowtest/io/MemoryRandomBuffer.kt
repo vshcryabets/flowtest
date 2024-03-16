@@ -1,20 +1,20 @@
 package com.v2soft.flowtest.io
 
 import com.v2soft.flowtest.base.HashMethod
-import com.v2soft.flowtest.base.InputFlowBase
+import com.v2soft.flowtest.base.InputBufferBase
 import kotlinx.coroutines.yield
 import java.nio.ByteBuffer
 import java.util.concurrent.Semaphore
 import java.util.zip.CRC32
 import kotlin.random.Random
 
-class MemoryRandomFlow(
+class MemoryRandomBuffer(
     private val blocksize: Int,
-    private val blockcount: Int,
+    private val blocksCount: Int,
     hashMethod: HashMethod
-) : InputFlowBase {
+) : InputBufferBase {
     private val mutex = Semaphore(1)
-    private val size = blockcount * blocksize
+    private val size = blocksCount * blocksize
     private val buffer: ByteBuffer = ByteBuffer.allocate(size)
     private val hashes: Array<ByteArray>
     private val hashSize: Int
@@ -24,13 +24,13 @@ class MemoryRandomFlow(
             HashMethod.CRC32 -> 4
             HashMethod.MD5 -> 16
         }
-        hashes = Array(blockcount) { ByteArray(hashSize) }
+        hashes = Array(blocksCount) { ByteArray(hashSize) }
     }
 
     suspend fun fillRandomData() {
         val random = Random(System.currentTimeMillis())
         val byteArray = ByteArray(blocksize)
-        for (i in 0..blockcount - 1) {
+        for (i in 0..blocksCount - 1) {
             yield()
             random.nextBytes(byteArray)
             buffer.put(byteArray)
@@ -40,7 +40,7 @@ class MemoryRandomFlow(
     suspend fun calculateBlockHashes() {
         val crc32 = CRC32()
         val buffer = ByteArray(blocksize)
-        for (i in 0..blockcount - 1) {
+        for (i in 0..blocksCount - 1) {
             yield()
             getBlock(i, buffer)
             crc32.reset()
@@ -52,6 +52,7 @@ class MemoryRandomFlow(
     }
 
     override fun getSize(): Long = size.toLong()
+    override fun getBlocksCount(): Int = blocksCount
 
     override fun getBlock(blockId: Int, array: ByteArray): Int =
         try {
