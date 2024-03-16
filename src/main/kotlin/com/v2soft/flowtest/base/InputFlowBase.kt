@@ -8,10 +8,8 @@ enum class HashMethod {
 }
 
 interface InputFlowBase {
-//    fun registerAsyncHandler(handler : InputFlowResponseHandler?)
     fun getSize() : Long
     fun getBlock(blockId: Int, array : ByteArray) : Int
-//    fun getBlockAsync(blockId: Int, array : ByteArray, requestTag : Int)
     fun getBlockSize(): Int
     fun getBlockHash(blockId: Int): ByteArray
 }

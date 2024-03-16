@@ -11,15 +11,12 @@ import java.util.concurrent.Semaphore
 class FileInputFlow(
     private val file: File,
     private val blockSize: Int,
-    hashMethod: HashMethod) : InputFlowBase, Closeable {
+    hashMethod: HashMethod
+) : InputFlowBase, Closeable {
 
     val fileInput = RandomAccessFile(file, "r")
     var requesthandler: InputFlowResponseHandler? = null
     val mutex = Semaphore(1)
-
-//    override fun registerAsyncHandler(handler: InputFlowResponseHandler?) {
-//        requesthandler = handler
-//    }
 
     override fun getSize(): Long = file.length()
 

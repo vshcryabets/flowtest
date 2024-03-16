@@ -1,7 +1,9 @@
 package com.v2soft.flowtest.io
 
 import com.v2soft.flowtest.base.HashMethod
-import org.junit.jupiter.api.Assertions.*
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 class MemoryRandomFlowTest {
@@ -12,6 +14,10 @@ class MemoryRandomFlowTest {
             blocksize = 1024,
             blockcount = 1024,
             hashMethod = HashMethod.CRC32)
+        runBlocking {
+            memBuffer.fillRandomData()
+            memBuffer.calculateBlockHashes()
+        }
         val block0Hash = memBuffer.getBlockHash(0)
         assertNotNull(block0Hash)
         assertNotEquals(0, block0Hash.size)
