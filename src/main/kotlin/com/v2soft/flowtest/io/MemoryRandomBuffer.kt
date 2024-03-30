@@ -8,7 +8,7 @@ import java.util.concurrent.Semaphore
 import java.util.zip.CRC32
 import kotlin.random.Random
 
-class MemoryRandomBuffer(
+open class MemoryRandomBuffer(
     private val blocksize: Int,
     private val blocksCount: Int,
     hashMethod: HashMethod
@@ -40,26 +40,27 @@ class MemoryRandomBuffer(
     suspend fun calculateBlockHashes() {
         val crc32 = CRC32()
         val buffer = ByteArray(blocksize)
+        val convertBuffer = ByteBuffer.allocate(Int.SIZE_BYTES)
         for (i in 0..blocksCount - 1) {
             yield()
-            getBlock(i, buffer)
+            getBlock(i, buffer, 0)
             crc32.reset()
             crc32.update(buffer)
-            val convertBuffer = ByteBuffer.allocate(Int.SIZE_BYTES)
+            convertBuffer.position(0)
             convertBuffer.putInt(crc32.value.toInt())
-            hashes[i] = convertBuffer.array()
+            hashes[i] = convertBuffer.array().clone()
         }
     }
 
     override fun getSize(): Long = size.toLong()
     override fun getBlocksCount(): Int = blocksCount
 
-    override fun getBlock(blockId: Int, array: ByteArray): Int =
+    override fun getBlock(blockId: Int, array: ByteArray, offset: Int): Int =
         try {
             mutex.acquire()
-            val offset = blockId * getBlockSize()
-            buffer.get(offset, array, 0, getBlockSize())
-            getBlockSize()
+            val offsetInBuffer = blockId * blocksize
+            buffer.get(offsetInBuffer, array, offset, blocksize)
+            blocksize
         } finally {
             mutex.release()
         }

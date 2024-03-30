@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class MemoryRandomBufferTest {
+class MemoryRandomBufferTests {
     @Test
     fun testCRC32Hashes() {
         // allocate 1mb test data
@@ -28,7 +28,7 @@ class MemoryRandomBufferTest {
 
     @Test
     fun testSize() {
-        // allocate 1mb test data
+        // allocate 1024*128 test data
         val memBuffer = MemoryRandomBuffer(
             blocksize = 1024,
             blocksCount = 128,
@@ -36,5 +36,19 @@ class MemoryRandomBufferTest {
         )
         assertEquals(128 * 1024, memBuffer.getSize())
         assertEquals(128, memBuffer.getBlocksCount())
+    }
+
+    @Test
+    fun testGetBuffer() {
+        // allocate 1024*128 test data
+        val memBuffer = MemoryRandomBuffer(
+            blocksize = 128,
+            blocksCount = 1024,
+            hashMethod = HashMethod.CRC32
+        )
+        val buffer = ByteArray(128)
+        assertEquals(128, memBuffer.getBlock(0, buffer ,0))
+        assertEquals(128, memBuffer.getBlock(1, buffer ,0))
+        assertEquals(128, memBuffer.getBlock(2, buffer ,0))
     }
 }

@@ -23,11 +23,11 @@ class FileInputFlow(
         TODO("Not yet implemented")
     }
 
-    override fun getBlock(blockId: Int, array: ByteArray): Int =
+    override fun getBlock(blockId: Int, array: ByteArray, offset: Int): Int =
         try {
             mutex.acquire()
             fileInput.seek(blockId * (blockSize.toLong()));
-            fileInput.read(array, 0, blockSize)
+            fileInput.read(array, offset, blockSize)
         } finally {
             mutex.release()
         }

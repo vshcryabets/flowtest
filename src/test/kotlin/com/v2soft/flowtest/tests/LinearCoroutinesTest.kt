@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.assertEquals
 
-internal class LinearTestTest {
+internal class LinearCoroutinesTest {
 
     val invalidated = AtomicBoolean(false)
 
@@ -18,7 +18,7 @@ internal class LinearTestTest {
             blocksCount = 1024,
             hashMethod = HashMethod.CRC32)
 
-        val test = LinearTest(memBuffer)
+        val test = LinearTestCoroutines(memBuffer)
         runBlocking {
             test.prepare().collect {
                 println(it)
@@ -27,38 +27,38 @@ internal class LinearTestTest {
         assertEquals(1024, test.hashes.size)
     }
 
-    suspend fun sender() {
-        println("Start sender")
-        while (!invalidated.get()) {
-            // send request
-            println("Send request ${Thread.currentThread().name}")
-            delay(1000)
-        }
-        println("End sender")
-     }
-
-    suspend fun receiver() {
-        println("Start receiver")
-        while (!invalidated.get()) {
-            // send request
-            println("Get result ${Thread.currentThread().name}")
-            delay(1000)
-        }
-        println("End receiver")
-    }
+//    suspend fun sender() {
+//        println("Start sender")
+//        while (!invalidated.get()) {
+//            // send request
+//            println("Send request ${Thread.currentThread().name}")
+//            delay(1000)
+//        }
+//        println("End sender")
+//     }
+//
+//    suspend fun receiver() {
+//        println("Start receiver")
+//        while (!invalidated.get()) {
+//            // send request
+//            println("Get result ${Thread.currentThread().name}")
+//            delay(1000)
+//        }
+//        println("End receiver")
+//    }
 
     @Test
     fun test2() {
-        val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-        println("A1 ${Thread.currentThread().name}")
-        scope.launch {
-            println("A2 ${Thread.currentThread().name}")
-            launch { sender() }
-            delay(100)
-            launch { receiver() }
-        }
-        Thread.sleep(5000)
-        invalidated.set(true)
+//        val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+//        println("A1 ${Thread.currentThread().name}")
+//        scope.launch {
+//            println("A2 ${Thread.currentThread().name}")
+//            launch { sender() }
+//            delay(100)
+//            launch { receiver() }
+//        }
+//        Thread.sleep(5000)
+//        invalidated.set(true)
 
 
 //        println("A2 ${Thread.currentThread().name}")

@@ -2,8 +2,8 @@ package com.v2soft.flowtest.tests
 
 import kotlinx.coroutines.flow.Flow
 
-interface Test {
+interface TestCoroutines {
     fun prepare(): Flow<Pair<Int, Int>>
-    fun startTest()
-    fun stopTest()
+    fun startTest(): Flow<Pair<Int, Int>>
+    fun cancelTest()
 }

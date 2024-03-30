@@ -17,7 +17,7 @@ interface InputBufferBase {
      * Whole number of blocks in this buffer. I.e size / blockSize.
      */
     fun getBlocksCount(): Int
-    fun getBlock(blockId: Int, array : ByteArray) : Int
+    fun getBlock(blockId: Int, array : ByteArray, offset: Int) : Int
     fun getBlockSize(): Int
     fun getBlockHash(blockId: Int): ByteArray
 }
