@@ -20,6 +20,7 @@ class LinearTestThreads(
     private var validationThreads: Array<Thread?> = arrayOfNulls(maxHashingThreads)
     private var startTime: Long = 0
     private var workFlag = AtomicBoolean(false)
+    private var allBlocksRequested = AtomicBoolean(false)
     private var _hashes = mutableListOf<ByteArray>()
     val hashes: List<ByteArray> = _hashes
     private val freeBlocks = LinkedBlockingDeque<ByteArray>()
@@ -29,6 +30,12 @@ class LinearTestThreads(
         maxBlocks = inputBuffer.getBlocksCount() * repeatCount
     ))
     val progress: StateFlow<TestProgress> = _progress
+    private var _statistics: TestStatistics = TestStatistics(
+        testTimeMs = 0,
+        blocksReceived = 0,
+        errorBlocks = 0,
+        blocksChecked = 0
+    )
 
     override fun prepare(notifyPeriod: kotlin.time.Duration,
                          callback: (Int, Int) -> Unit) {
@@ -50,14 +57,25 @@ class LinearTestThreads(
     override fun startTest(notifyPeriod: kotlin.time.Duration,
                            progressCallback: (TestProgress) -> Unit,
                            readErrorCallback: (Exception) -> Unit) {
-        startTime= System.currentTimeMillis()
+        startTime = System.currentTimeMillis()
         workFlag.set(true)
+        allBlocksRequested.set(false)
+        _statistics = _statistics.copy(
+            testTimeMs = 0,
+            blocksReceived = 0,
+            errorBlocks = 0,
+            blocksChecked = 0
+        )
 
         for (tid in 0..maxHashingThreads - 1) {
             validationThreads[tid] = Thread {
                 val crc32 = CRC32()
                 val convertBuffer = ByteBuffer.allocate(Int.SIZE_BYTES)
                 while (workFlag.get()) {
+                    if (allBlocksRequested.get() && receivedBlocks.isEmpty()) {
+                        println("allBlocksRequested + receivedBlocks.isEmpty")
+                        workFlag.set(false)
+                    }
                     val receivedBlock = receivedBlocks.poll(50, TimeUnit.MILLISECONDS) ?: continue
                     val expectedHash = hashes[receivedBlock.first]
                     convertBuffer.position(0)
@@ -75,6 +93,7 @@ class LinearTestThreads(
                     }
                     freeBlocks.push(receivedBlock.second)
                 }
+                workFlag.set(false)
             }
             validationThreads[tid]?.start()
         }
@@ -96,17 +115,16 @@ class LinearTestThreads(
                     _progress.update { it.copy(requestedBlocks = readBlockCount) }
                     progressCallback(_progress.value)
                     if (!sendReadRequest(blockNo, readErrorCallback))
-                        break;
+                        break
                 }
             }
-
+            allBlocksRequested.set(true)
             _progress.update {
                 it.copy(
                     currentRound = it.maxRounds,
                     requestedBlocks = it.maxBlocks
                 )
             }
-            workFlag.set(false)
         }
         readThread?.start()
     }
@@ -136,14 +154,19 @@ class LinearTestThreads(
         workFlag.set(false)
     }
 
-    override fun getStatistics(): TestStatistics {
-        return TestStatistics(0, 0, 0)
-    }
+    override fun getStatistics(): TestStatistics = _statistics
 
     fun join() {
         readThread?.join()
         validationThreads.forEach {
             it?.join()
         }
+        val progress = _progress.value
+        _statistics = _statistics.copy(
+            testTimeMs = System.currentTimeMillis() - startTime,
+            errorBlocks = progress.incorrectBlocks,
+            blocksReceived = progress.requestedBlocks,
+            blocksChecked = progress.correctBlocks
+        )
     }
 }

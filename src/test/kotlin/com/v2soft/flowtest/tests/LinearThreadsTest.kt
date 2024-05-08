@@ -29,6 +29,7 @@ internal class LinearThreadsTest {
             calculateBlockHashes()
         }
     }
+
     @Test
     fun testPrepare() {
         val memBuffer = prepareMemBuffer()
@@ -36,7 +37,6 @@ internal class LinearThreadsTest {
         var notifyCount = 0
         test.prepare(50.milliseconds) { current, max ->
             notifyCount++
-            //println("$current from $max")
         }
         assertEquals(1024, test.hashes.size)
         assertTrue(notifyCount < 120)
@@ -76,5 +76,31 @@ internal class LinearThreadsTest {
         assertFalse(test.sendReadRequest(0, {}), "sendReadRequest() should return false when test not strated")
     }
 
+    @Test
+    fun testStatistics() {
+        val repeatCount = 1024 * 16
+        val memBuffer = prepareMemBuffer()
+        val test = LinearTestThreads(memBuffer, repeatCount = repeatCount)
+        test.prepare(50.milliseconds) { current, max -> }
+
+        test.startTest(
+            50.milliseconds,
+            {
+            },
+            {
+                test.cancelTest()
+            }
+        )
+        test.join()
+        val stat = test.getStatistics()
+        assertTrue(stat.testTimeMs > 0)
+        assertEquals(0, stat.errorBlocks)
+        assertEquals(memBuffer.getBlocksCount() * repeatCount, stat.blocksReceived)
+        assertEquals(memBuffer.getBlocksCount() * repeatCount, stat.blocksChecked)
+        // check mean receive speed
+        val meanSpeed = stat.blocksReceived / (stat.testTimeMs / 1000.0)
+        println("meanSpeed=$meanSpeed KB/s time=${stat.testTimeMs}")
+        // check mean CRC process speed
+    }
     // TEST cancel
 }
